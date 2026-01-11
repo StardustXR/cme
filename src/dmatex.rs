@@ -7,10 +7,11 @@ use stardust_xr_fusion::{
 use timeline_syncobj::timeline_syncobj::TimelineSyncObj;
 use tracing::{error, info, warn};
 use vulkano::{
-    device::Device,
+    device::{Device, DeviceExtensions, DeviceFeatures},
     image::{
         Image, ImageCreateFlags, ImageCreateInfo, ImageTiling, ImageType, ImageUsage, sys::RawImage,
     },
+    instance::InstanceExtensions,
     memory::{
         DedicatedAllocation, DeviceMemory, ExternalMemoryHandleType, ExternalMemoryHandleTypes,
         MemoryAllocateInfo, MemoryPropertyFlags, ResourceMemory,
@@ -167,5 +168,28 @@ impl Dmatex {
             dmatex_id,
             _client: client.clone(),
         }
+    }
+}
+
+impl Dmatex {
+    /// empty, exists just incase any instance exts are required in the future
+    pub const fn required_instance_exts() -> InstanceExtensions {
+        InstanceExtensions::empty()
+    }
+    pub const fn required_device_exts() -> DeviceExtensions {
+        DeviceExtensions {
+            ext_image_drm_format_modifier: true,
+            ext_external_memory_dma_buf: true,
+            khr_external_memory: true,
+            khr_external_memory_fd: true,
+            khr_external_semaphore: true,
+            khr_external_semaphore_fd: true,
+
+            ..DeviceExtensions::empty()
+        }
+    }
+    /// empty, exists just incase any device features are required in the future
+    pub const fn required_device_features() -> DeviceFeatures {
+        DeviceFeatures::empty()
     }
 }
