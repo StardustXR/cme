@@ -1325,7 +1325,7 @@ dependencies = [
 [[package]]
 name = "stardust-xr-fusion"
 version = "0.50.0"
-source = "git+http://github.com/StardustXR/core.git#f4494c94f105b2fee60fb69aa1ecc7889d089aff"
+source = "git+http://github.com/StardustXR/core.git#dab3536d2c354bae85abf96496abb94ffa0e512d"
 dependencies = [
  "color-eyre",
  "convert_case",
@@ -1351,7 +1351,7 @@ dependencies = [
 [[package]]
 name = "stardust-xr-gluon"
 version = "0.50.0"
-source = "git+http://github.com/StardustXR/core.git#f4494c94f105b2fee60fb69aa1ecc7889d089aff"
+source = "git+http://github.com/StardustXR/core.git#dab3536d2c354bae85abf96496abb94ffa0e512d"
 dependencies = [
  "futures",
  "nanoid",
@@ -1364,7 +1364,7 @@ dependencies = [
 [[package]]
 name = "stardust-xr-protocol"
 version = "0.50.0"
-source = "git+http://github.com/StardustXR/core.git#f4494c94f105b2fee60fb69aa1ecc7889d089aff"
+source = "git+http://github.com/StardustXR/core.git#dab3536d2c354bae85abf96496abb94ffa0e512d"
 dependencies = [
  "fnv",
  "kdl",
@@ -1374,7 +1374,7 @@ dependencies = [
 [[package]]
 name = "stardust-xr-wire"
 version = "0.50.0"
-source = "git+http://github.com/StardustXR/core.git#f4494c94f105b2fee60fb69aa1ecc7889d089aff"
+source = "git+http://github.com/StardustXR/core.git#dab3536d2c354bae85abf96496abb94ffa0e512d"
 dependencies = [
  "dirs",
  "flatbuffers",

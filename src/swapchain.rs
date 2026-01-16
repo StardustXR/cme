@@ -2,7 +2,7 @@ use std::{os::fd::AsFd, sync::Arc};
 
 use stardust_xr_fusion::{
     ClientHandle,
-    drawable::{DmatexMaterialParam, DmatexSize},
+    drawable::{DmatexSize, DmatexSubmitInfo},
 };
 use vulkano::{
     device::{Device, Queue, QueueGuard},
@@ -90,7 +90,7 @@ impl SwapchainFrameHandle {
         dev: &Arc<Device>,
         render_queue: &Arc<Queue>,
         submit: impl FnOnce(Arc<Semaphore>, QueueGuard, Arc<Semaphore>),
-    ) -> DmatexMaterialParam {
+    ) -> DmatexSubmitInfo {
         let wait_semaphore = Arc::new(Semaphore::from_pool(dev.clone()).unwrap());
         unsafe {
             wait_semaphore
@@ -130,7 +130,7 @@ impl SwapchainFrameHandle {
             .import_sync_file_point(fd.as_fd(), self.server_acquire)
             .unwrap();
 
-        DmatexMaterialParam {
+        DmatexSubmitInfo {
             dmatex_id: self.image.dmatex_id,
             acquire_point: self.server_acquire,
             release_point: self.next_server_release,
