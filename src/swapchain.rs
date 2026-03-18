@@ -92,9 +92,7 @@ impl SwapchainFrameHandle {
         submit: impl FnOnce(Arc<Semaphore>, QueueGuard, Arc<Semaphore>),
     ) -> DmatexSubmitInfo {
         let wait_semaphore = Arc::new(Semaphore::from_pool(dev.clone()).unwrap());
-        let now = Instant::now();
         self.image.timeline.blocking_wait(self.previous_server_release, None).unwrap();
-    dbg!(        Instant::now().duration_since(now).as_secs_f64() * 1000.0);
         unsafe {
             wait_semaphore
                 .import_fd(ImportSemaphoreFdInfo {
