@@ -15,6 +15,7 @@ use vulkano::{
 
 use crate::{dmatex::Dmatex, format::DmatexFormat, render_device::RenderDevice};
 
+#[derive(Debug)]
 pub struct Swapchain<const IMAGES: usize = 3> {
     images: [(Arc<Dmatex>, u64); IMAGES],
     next_image: usize,

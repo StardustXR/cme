@@ -7,6 +7,7 @@ use vulkano::{VulkanError, device::physical::PhysicalDevice, instance::Instance}
 
 use crate::get_phys_dev_node_id;
 
+#[derive(Debug)]
 /// Roughly corresponds to a GPU
 pub struct RenderDevice {
     drm_node: DrmRenderNode,

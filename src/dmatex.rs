@@ -20,6 +20,7 @@ use vulkano::{
 
 use crate::{format::DmatexFormat, render_device::RenderDevice};
 
+#[derive(Debug)]
 pub struct Dmatex {
     pub image: Arc<Image>,
     pub timeline: TimelineSyncObj,
