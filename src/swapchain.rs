@@ -1,8 +1,8 @@
-use std::{os::fd::AsFd, sync::Arc, time::Instant};
+use std::{os::fd::AsFd, sync::Arc};
 
 use stardust_xr_fusion::{
-    ClientHandle,
-    drawable::{DmatexSize, DmatexSubmitInfo},
+    client::{Client, ClientHandler},
+    dmatex::{DmatexRef, DmatexSize},
 };
 use vulkano::{
     device::{Device, Queue, QueueGuard},
@@ -21,8 +21,8 @@ pub struct Swapchain<const IMAGES: usize = 3> {
 }
 
 impl Swapchain {
-    pub fn new(
-        client: &Arc<ClientHandle>,
+    pub async fn new(
+        client: &Arc<Client<impl ClientHandler>>,
         dev: &Arc<Device>,
         render_dev: &RenderDevice,
         size: DmatexSize,
@@ -30,9 +30,10 @@ impl Swapchain {
         array_layers: Option<u32>,
         usage: ImageUsage,
     ) -> Self {
-        let images = [(); _]
-            .map(|_| {
-                Arc::new(Dmatex::new(
+        let mut images: [Option<Arc<Dmatex>>; 3] = [const { None }; _];
+        for image in images.iter_mut() {
+            image.replace(Arc::new(
+                Dmatex::new(
                     client,
                     dev,
                     render_dev,
@@ -40,12 +41,14 @@ impl Swapchain {
                     format,
                     array_layers,
                     usage,
-                ))
-            })
-            .map(|v| (v, 0));
+                )
+                .await,
+            ));
+        }
+        let images = images.map(|v| (v.unwrap(), 1));
         for image in &images {
             unsafe {
-                image.0.timeline.signal(0).unwrap();
+                image.0.timeline.signal(1).unwrap();
             }
         }
         Self {
@@ -75,6 +78,11 @@ pub struct SwapchainFrameHandle {
     next_server_release: u64,
     image: Arc<Dmatex>,
 }
+pub struct DmatexSubmitInfo {
+    pub dmatex: DmatexRef,
+    pub acquire_point: u64,
+    pub release_point: u64,
+}
 impl SwapchainFrameHandle {
     pub fn image(&self) -> Arc<Image> {
         self.image.image.clone()
@@ -92,7 +100,10 @@ impl SwapchainFrameHandle {
         submit: impl FnOnce(Arc<Semaphore>, QueueGuard, Arc<Semaphore>),
     ) -> DmatexSubmitInfo {
         let wait_semaphore = Arc::new(Semaphore::from_pool(dev.clone()).unwrap());
-        self.image.timeline.blocking_wait(self.previous_server_release, None).unwrap();
+        self.image
+            .timeline
+            .blocking_wait(self.previous_server_release, None)
+            .unwrap();
         unsafe {
             wait_semaphore
                 .import_fd(ImportSemaphoreFdInfo {
@@ -132,7 +143,7 @@ impl SwapchainFrameHandle {
             .unwrap();
 
         DmatexSubmitInfo {
-            dmatex_id: self.image.dmatex_id,
+            dmatex: self.image.dmatex.clone(),
             acquire_point: self.server_acquire,
             release_point: self.next_server_release,
         }

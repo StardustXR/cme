@@ -1,8 +1,8 @@
 use std::{os::fd::OwnedFd, sync::Arc};
 
 use stardust_xr_fusion::{
-    ClientHandle,
-    drawable::{DmatexPlane, DmatexSize, import_dmatex},
+    client::{Client, ClientHandler},
+    dmatex::{self, DmatexPlane, DmatexRef, DmatexSize},
 };
 use timeline_syncobj::timeline_syncobj::TimelineSyncObj;
 use tracing::{error, info, warn};
@@ -23,13 +23,12 @@ use crate::{format::DmatexFormat, render_device::RenderDevice};
 pub struct Dmatex {
     pub image: Arc<Image>,
     pub timeline: TimelineSyncObj,
-    pub dmatex_id: u64,
-    _client: Arc<ClientHandle>,
+    pub dmatex: DmatexRef,
 }
 impl Dmatex {
     // TODO: error handling
-    pub fn new(
-        client: &Arc<ClientHandle>,
+    pub async fn new(
+        client: &Arc<Client<impl ClientHandler>>,
         dev: &Arc<Device>,
         render_dev: &RenderDevice,
         size: DmatexSize,
@@ -51,16 +50,16 @@ impl Dmatex {
             ImageCreateInfo {
                 flags: ImageCreateFlags::empty(),
                 image_type: match &size {
-                    DmatexSize::Dim1D(_) => ImageType::Dim1d,
-                    DmatexSize::Dim2D(_) => ImageType::Dim2d,
-                    DmatexSize::Dim3D(_) => ImageType::Dim3d,
+                    DmatexSize::Size1D { size: _ } => ImageType::Dim1d,
+                    DmatexSize::Size2D { size: _ } => ImageType::Dim2d,
+                    DmatexSize::Size3D { size: _ } => ImageType::Dim3d,
                 },
                 format: format.vk_format(),
                 view_formats: vec![],
                 extent: match &size {
-                    DmatexSize::Dim1D(v) => [*v, 1, 1],
-                    DmatexSize::Dim2D(v) => [v.x, v.y, 1],
-                    DmatexSize::Dim3D(v) => (*v).into(),
+                    DmatexSize::Size1D { size: v } => [*v, 1, 1],
+                    DmatexSize::Size2D { size: v } => [v.x, v.y, 1],
+                    DmatexSize::Size3D { size: v } => (*v).into(),
                 },
                 array_layers: array_layers.unwrap_or(1),
                 tiling: ImageTiling::DrmFormatModifier,
@@ -124,8 +123,7 @@ impl Dmatex {
             Ok(v) => v,
             Err((err, _, _)) => panic!("failed to bind image mem: {err}"),
         };
-        let timeline = TimelineSyncObj::create(render_dev.drm_node()).unwrap();
-        let dmatex_id = client.generate_id();
+        let timeline = TimelineSyncObj::new(render_dev.drm_node()).unwrap();
         let first_fd = fds[0].try_clone().unwrap();
         let planes = fds
             .into_iter()
@@ -142,31 +140,34 @@ impl Dmatex {
                 let layout = image.subresource_layout(aspect, 0, 0).unwrap();
                 DmatexPlane {
                     dmabuf_fd: OwnedFd::from(v).into(),
-                    offset: layout.offset as u32,
-                    row_size: layout.row_pitch as u32,
-                    array_element_size: layout.array_pitch.unwrap_or(0) as u32,
-                    depth_slice_size: layout.depth_pitch.unwrap_or(0) as u32,
+                    offset: layout.offset,
+                    row_size: layout.row_pitch,
+                    array_element_size: layout.array_pitch.unwrap_or(0),
+                    depth_slice_size: layout.depth_pitch.unwrap_or(0),
                 }
             })
             .collect::<Vec<_>>();
-        import_dmatex(
-            client,
-            dmatex_id,
-            size,
-            format.drm_fourcc() as u32,
-            modifier,
-            format!("{:?}", format.vk_format()).contains("SRGB"),
-            array_layers,
-            &planes,
-            timeline.export().unwrap().into(),
-        )
-        .unwrap();
+        let dmatex = client
+            .dmatex_interface()
+            .import_dmatex(
+                size,
+                dmatex::DmatexFormat {
+                    drm_fourcc: format.drm_fourcc() as u32,
+                    drm_modifier: modifier,
+                    is_srgb: format!("{:?}", format.vk_format()).contains("SRGB"),
+                },
+                array_layers.unwrap_or(1),
+                planes,
+                timeline.export().unwrap(),
+            )
+            .await
+            .unwrap()
+            .unwrap();
 
         Self {
             image: Arc::new(image),
             timeline,
-            dmatex_id,
-            _client: client.clone(),
+            dmatex,
         }
     }
 }

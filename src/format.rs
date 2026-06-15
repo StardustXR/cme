@@ -1,7 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
 use drm_fourcc::DrmFourcc;
-use stardust_xr_fusion::{ClientHandle, drawable::enumerate_dmatex_formats, node::NodeResult};
+use stardust_xr_fusion::{
+    client::{Client, ClientHandler},
+    types::ResourceLoadError,
+};
 use tracing::{error, warn};
 use vulkano::format::Format;
 
@@ -27,14 +30,18 @@ impl DmatexFormat {
 }
 impl DmatexFormat {
     pub async fn enumerate(
-        client: &Arc<ClientHandle>,
+        client: &Arc<Client<impl ClientHandler>>,
         render_device: &RenderDevice,
-    ) -> NodeResult<HashMap<Format, DmatexFormat>> {
-        let formats = enumerate_dmatex_formats(client, render_device.drm_node_id()).await?;
+    ) -> stardust_xr_fusion::Result<HashMap<Format, DmatexFormat>> {
+        let formats = client
+            .dmatex_interface()
+            .enumerate_formats(render_device.drm_node_id())
+            .await?
+            .ok_or(ResourceLoadError::NotFound)?;
         let mut out = HashMap::new();
         for v in formats {
-            let Ok(fourcc) = drm_fourcc::DrmFourcc::try_from(v.format) else {
-                error!("unable to parse drm_fourcc: {:X}", v.format);
+            let Ok(fourcc) = drm_fourcc::DrmFourcc::try_from(v.drm_fourcc) else {
+                error!("unable to parse drm_fourcc: {:X}", v.drm_fourcc);
                 continue;
             };
             let Some(format) = Format::from_drm_fourcc(fourcc) else {
@@ -59,7 +66,6 @@ impl DmatexFormat {
                 .variants
                 .push(DmatexFormatVariant {
                     modifier: v.drm_modifier,
-                    planes: v.planes,
                 });
         }
 
@@ -69,7 +75,6 @@ impl DmatexFormat {
 #[derive(Debug, Clone, Copy)]
 pub struct DmatexFormatVariant {
     pub modifier: u64,
-    pub planes: u32,
 }
 
 pub trait VulkanoFormatExtension: Sized {

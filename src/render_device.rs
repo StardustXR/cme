@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use stardust_xr_fusion::{ClientHandle, drawable::get_primary_render_device_id, node::NodeError};
+use stardust_xr_fusion::client::{Client, ClientHandler};
 use thiserror::Error;
 use timeline_syncobj::render_node::DrmRenderNode;
 use vulkano::{VulkanError, device::physical::PhysicalDevice, instance::Instance};
@@ -16,11 +16,13 @@ pub struct RenderDevice {
 impl RenderDevice {
     /// initializes Self with the preferred [`RenderDevice`] of the server
     pub async fn primary_server_device(
-        client: &Arc<ClientHandle>,
+        client: &Arc<Client<impl ClientHandler>>,
     ) -> Result<Self, RenderDeviceCreationError> {
-        let id = get_primary_render_device_id(client)
+        let id = client
+            .dmatex_interface()
+            .primary_render_node_id()
             .await
-            .map_err(RenderDeviceCreationError::FailedToGetDeviceId)?;
+            .map_err(|_| RenderDeviceCreationError::FailedToGetDeviceId)?;
         let drm_node =
             DrmRenderNode::new(id).map_err(RenderDeviceCreationError::FailedToOpenDrmNode)?;
 
@@ -50,8 +52,8 @@ impl RenderDevice {
 
 #[derive(Debug, Error)]
 pub enum RenderDeviceCreationError {
-    #[error("failed to get the RenderDevice id from the server: {0}")]
-    FailedToGetDeviceId(NodeError),
+    #[error("failed to get the RenderDevice id from the server")]
+    FailedToGetDeviceId,
     #[error("unable to open DrmRenderNode: {0}")]
     FailedToOpenDrmNode(rustix::io::Errno),
 }
