@@ -2,7 +2,7 @@ use std::{os::fd::AsFd, sync::Arc};
 
 use stardust_xr_fusion::{
     client::{Client, ClientHandler},
-    dmatex::{DmatexRef, DmatexSize},
+    dmatex::{AlphaMode, DmatexRef, DmatexSize},
 };
 use vulkano::{
     device::{Device, Queue, QueueGuard},
@@ -29,6 +29,7 @@ impl Swapchain {
         size: DmatexSize,
         format: &DmatexFormat,
         array_layers: Option<u32>,
+        alpha_mode: AlphaMode,
         usage: ImageUsage,
     ) -> Self {
         let mut images: [Option<Arc<Dmatex>>; 3] = [const { None }; _];
@@ -41,6 +42,7 @@ impl Swapchain {
                     size.clone(),
                     format,
                     array_layers,
+                    alpha_mode,
                     usage,
                 )
                 .await,

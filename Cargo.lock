@@ -81,7 +81,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 [[package]]
 name = "binderbinder"
 version = "0.1.0"
-source = "git+https://github.com/technobaboo/binderbinder#be24952c02486e745c7b9d63f9cd77b42ecefdc7"
+source = "git+https://github.com/technobaboo/binderbinder#bc67300889b264553697fd5d720a929c21571954"
 dependencies = [
  "bitflags",
  "dashmap",
@@ -913,12 +913,13 @@ dependencies = [
 [[package]]
 name = "stardust-xr-fusion"
 version = "0.51.1"
-source = "git+http://github.com/StardustXR/core.git?branch=binder#4744a8390eff98ffe58be0b5c29167fe4fafd09e"
+source = "git+http://github.com/StardustXR/core.git?branch=binder#7fa65ccdeeea7c901d36947ab0ef94f373a57373"
 dependencies = [
  "glam 0.30.10",
  "gluon",
  "parking_lot",
  "pion-binder",
+ "rustix",
  "stardust-xr-protocol",
  "thiserror",
  "tokio",
@@ -929,7 +930,7 @@ dependencies = [
 [[package]]
 name = "stardust-xr-protocol"
 version = "0.51.1"
-source = "git+http://github.com/StardustXR/core.git?branch=binder#4744a8390eff98ffe58be0b5c29167fe4fafd09e"
+source = "git+http://github.com/StardustXR/core.git?branch=binder#7fa65ccdeeea7c901d36947ab0ef94f373a57373"
 dependencies = [
  "fnv",
  "glam 0.29.3",

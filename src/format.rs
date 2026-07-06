@@ -16,6 +16,8 @@ pub struct DmatexFormat {
     format: Format,
     fourcc: DrmFourcc,
     variants: Vec<DmatexFormatVariant>,
+    sampling: bool,
+    rendering: bool,
 }
 impl DmatexFormat {
     pub fn vk_format(&self) -> Format {
@@ -27,7 +29,16 @@ impl DmatexFormat {
     pub fn variants(&self) -> &[DmatexFormatVariant] {
         &self.variants
     }
+    /// can this be sampled (used as a texture) by the remote process
+    pub fn allows_sampling(&self) -> bool {
+        self.sampling
+    }
+    /// can this be used as a render attachment (camera output) by the remote process
+    pub fn allows_rendering(&self) -> bool {
+        self.rendering
+    }
 }
+// TODO: expose sampling and render bools
 impl DmatexFormat {
     pub async fn enumerate(
         client: &Arc<Client<impl ClientHandler>>,
@@ -48,7 +59,7 @@ impl DmatexFormat {
                 warn!("failed to get vulkan format for drm_fourcc: {fourcc}");
                 continue;
             };
-            let format = if v.is_srgb {
+            let format = if v.supports_srgb {
                 let Some(format) = format.to_srgb() else {
                     warn!("failed to do srgb conversion for: {format:?}");
                     continue;
@@ -62,6 +73,8 @@ impl DmatexFormat {
                     format,
                     fourcc,
                     variants: vec![],
+                    sampling: v.supports_sampling,
+                    rendering: v.supports_rendering,
                 })
                 .variants
                 .push(DmatexFormatVariant {
