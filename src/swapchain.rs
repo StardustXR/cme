@@ -39,7 +39,7 @@ impl Swapchain {
                     client,
                     dev,
                     render_dev,
-                    size.clone(),
+                    size,
                     format,
                     array_layers,
                     alpha_mode,
