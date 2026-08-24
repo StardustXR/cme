@@ -10,7 +10,7 @@ homepage = "https://stardustxr.org"
 [dependencies]
 timeline_syncobj = "0.2.0"
 vulkano = { git = "https://github.com/Schmarni-Dev/vulkano", branch = "0_35_dmabuf_fixes" }
-stardust-xr-fusion = { git = "http://github.com/StardustXR/core.git", branch = "binder" }
+stardust-xr-fusion = { git = "https://github.com/StardustXR/core.git", branch = "refactor/strongipc" }
 thiserror = "2.0.17"
 tracing = "0.1.44"
 drm-fourcc = "2.2.0"
