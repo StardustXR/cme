@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use drm_fourcc::DrmFourcc;
 use stardust_xr_fusion::{
@@ -41,7 +41,7 @@ impl DmatexFormat {
 // TODO: expose sampling and render bools
 impl DmatexFormat {
     pub async fn enumerate(
-        client: &Arc<Client<impl ClientHandler>>,
+        client: &Client<impl ClientHandler>,
         render_device: &RenderDevice,
     ) -> stardust_xr_fusion::Result<HashMap<Format, DmatexFormat>> {
         let formats = client

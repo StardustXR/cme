@@ -17,7 +17,7 @@ pub struct RenderDevice {
 impl RenderDevice {
     /// initializes Self with the preferred [`RenderDevice`] of the server
     pub async fn primary_server_device(
-        client: &Arc<Client<impl ClientHandler>>,
+        client: &Client<impl ClientHandler>,
     ) -> Result<Self, RenderDeviceCreationError> {
         let id = client
             .dmatex_interface()

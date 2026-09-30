@@ -23,7 +23,7 @@ pub struct Swapchain<const IMAGES: usize = 3> {
 
 impl Swapchain {
     pub async fn new(
-        client: &Arc<Client<impl ClientHandler>>,
+        client: &Client<impl ClientHandler>,
         dev: &Arc<Device>,
         render_dev: &RenderDevice,
         size: DmatexSize,

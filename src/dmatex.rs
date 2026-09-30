@@ -29,7 +29,7 @@ pub struct Dmatex {
 impl Dmatex {
     // TODO: error handling
     pub async fn new(
-        client: &Arc<Client<impl ClientHandler>>,
+        client: &Client<impl ClientHandler>,
         dev: &Arc<Device>,
         render_dev: &RenderDevice,
         size: DmatexSize,
