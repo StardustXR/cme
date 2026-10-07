@@ -1,6 +1,6 @@
 [package]
 name = "stardust-xr-cme"
-version = "0.52.0"
+version = "0.53.0-rc.1"
 edition = "2024"
 license = "MIT"
 description = "Vulkano bindings for Stardust XR"
@@ -10,7 +10,7 @@ homepage = "https://stardustxr.org"
 [dependencies]
 timeline_syncobj = "0.2.0"
 vulkano = { git = "https://github.com/Schmarni-Dev/vulkano", branch = "0_35_dmabuf_fixes" }
-stardust-xr-fusion = "0.52.0"
+stardust-xr-fusion = "0.53.0-rc.1"
 # stardust-xr-fusion = { git = "https://github.com/StardustXR/core.git", branch = "refactor/strongipc" }
 thiserror = "2.0.17"
 tracing = "0.1.44"
